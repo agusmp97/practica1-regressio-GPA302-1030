@@ -119,8 +119,22 @@ plt.show()
 #######  Distribució Gausiana de cada Atribut ###########
 # ----------------------------------------------------------------------------------------------------------------- #
 """
+
+from scipy.stats import jarque_bera  #3
+#from scipy.stats import kstest
+#from statsmodels.stats.diagnostic import lilliefors
+
+data_jordan = dataset_jordan.values
+dataset_jordan.shape[1]
+for i in range(dataset_jordan.shape[1]):
+
+    x = data_jordan[:, i]
+    stat, p = jarque_bera(x)
+    #stat, p = kstest(x,'norm')
+=======
 #from scipy.stats import jarque_bera  #3
 #from scipy.stats import kstest
+
 
 data_jordan = dataset_jordan.values
 dataset_jordan.shape[1]
@@ -141,10 +155,20 @@ for i in range(dataset_jordan.shape[1]):
 """
 
 
+# ['age','mp','fg','stl','blk','tov']
+# ['age', 'result', 'mp', 'fg', 'stl', 'blk', 'tov', 'pts', 'game_score']
+# ['result','mp','fg','fga','ft','ft','trb','ast','pts','game_score']
+# ----------------------------------------------------------------------------------------------------------------- #
+#######  Distribució Gausiana de cada Atribut ###########
+# ----------------------------------------------------------------------------------------------------------------- #
+"""
+=======
+
 # ----------------------------------------------------------------------------------------------------------------- #
 #######  Distribució Gausiana de cada Atribut ###########
 # ----------------------------------------------------------------------------------------------------------------- #
 """"""
+
 plt.figure()
 # relacio = sns.pairplot(dataset_jordan[['game','age','result','mp','fg','fga','fgp','three','threeatt','threep','ft','fta','ftp','orb','drb','trb','ast','stl','blk','tov','pts','game_score']])
 # relacio = sns.pairplot(dataset_jordan[['game','age','result','mp','fg','fga', 'three', 'threeatt','ft','fta','orb','drb','trb','ast','stl','blk','tov','pts','game_score']])
@@ -158,10 +182,18 @@ plt.show()
 # relacio = sns.pairplot(dataset_lebron[['game','age','result','mp','fg','fga','fgp','three','threeatt','threep','ft','fta','ftp','orb','drb','trb','ast','stl','blk','tov','pts','game_score']])
 # plt.show()
 
+"""
+# ----------------------------------------------------------------------------------------------------------------- #
+#*************Generació plot per atribut per veure'n distribució gausiana********
+# ----------------------------------------------------------------------------------------------------------------- #
+"""
+=======
+
 # ----------------------------------------------------------------------------------------------------------------- #
 #*************Generació plot per atribut per veure'n distribució gausiana********
 # ----------------------------------------------------------------------------------------------------------------- #
 """"""
+
 
 atributs= ['game','age','result','mp','fg','fga','fgp','three','threeatt','threep','ft','fta','ftp','orb','drb','trb','ast','stl','blk','tov','pts','game_score']
 
@@ -173,6 +205,9 @@ for atr in atributs:
     plt.scatter(dataset_jordan['age'], dataset_jordan[atr])
     plt.ylabel(atr);plt.xlabel('age')
     plt.show()
+
+
+=======
 
 
 #Observem que game, age, three, threeatt, threep i stl no tenen distribució gausianan. La resta si.
@@ -199,10 +234,14 @@ def estandaritzarMitjana(dataset):
     return (dataset-dataset.mean())/dataset.std()
 
 
-dataset_jordan_norm = estandaritzarMitjana(dataset_jordan)
-dataset_lebron_norm = estandaritzarMitjana(dataset_lebron)
+# dataset_jordan_norm = estandaritzarMitjana(dataset_jordan)
+# dataset_lebron_norm = estandaritzarMitjana(dataset_lebron)
 
+
+# ----------------------------------------------------------------------------------------------------------------- #
 # Funcions per la regressió
+# ----------------------------------------------------------------------------------------------------------------- #
+
 def mse(v1, v2):
     return ((v1 - v2)**2).mean()
 
@@ -246,6 +285,37 @@ def split_data(x, y, train_ratio=0.8):
 # poden ser visualitzables en el nou espai. Existeixen altres embeddings de baixa dimensionalitat on poder visualitzar
 # les dades?
 
+
+# data_lebron = dataset_lebron_norm.values
+# x_lebron = data_lebron[:, :-1]
+# x_lebron = data_lebron[:, :3] #age
+# y_lebron = data_lebron[:, -1]
+# Dividim dades d'entrenament LEBRON
+
+# data_jordan = dataset_jordan.values
+# data_lebron = dataset_lebron.values
+# x_jordan = data_jordan[:, :-1]
+# y_jordan = data_jordan[:, -1]
+#
+#
+# x_train, y_train, x_val, y_val = split_data(x_lebron, y_lebron)
+#
+# for i in range(x_train.shape[1]):
+#     x_t = x_train[:,i] # seleccionem atribut i en conjunt de train
+#     x_v = x_val[:,i] # seleccionem atribut i en conjunt de val.
+#     x_t = np.reshape(x_t,(x_t.shape[0],1))
+#     x_v = np.reshape(x_v,(x_v.shape[0],1))
+#
+#     regr = regression(x_t, y_train)
+#     error = mse(y_val, regr.predict(x_v)) # calculem error
+#     r2 = r2_score(y_val, regr.predict(x_v))
+#
+#     print("Error en atribut %d: %f" %(data_jordan.columns[i], error))
+#
+
+
+"""
+=======
 data_lebron=dataset_lebron_norm.values
 # x_lebron = data_lebron[:, :-1]
 x_lebron = data_lebron[:, :3] #age
@@ -253,6 +323,7 @@ y_lebron = data_lebron[:, -1]
 # Dividim dades d'entrenament LEBRON
 
 x_train, y_train, x_val, y_val = split_data(x_lebron, y_lebron)
+
 
 
 x_t = x_train[:,1] # seleccionem atribut age i del conjunt de train
@@ -272,6 +343,47 @@ r2 = r2_score(y_val, regr.predict(x_v))
 
 print("Error en atribut %d: %f" %(1, error))
 print("R2 score en atribut %d: %f" %(1, r2))
+
+"""
+
+data_jordan = dataset_jordan.values
+
+x_jordan = data_jordan[:, :-1]
+y_jordan = data_jordan[:, -1]
+
+dataset_jordan_norm = estandaritzarMitjana(dataset_jordan)
+data_jordan_norm = dataset_jordan_norm.values
+
+# x_jordan_norm = data_jordan_norm[:, :-1]
+# y_jordan_norm = data_jordan_norm[:, -1]
+x_jordan_norm = dataset_jordan_norm[['mp','fg','fga','pts']]
+y_jordan_norm = dataset_jordan_norm[['game_score']]
+
+# x_train_norm, y_train_norm, x_test_norm, y_test_norm = split_data(x_jordan_norm.values, y_jordan_norm.values)
+from sklearn.model_selection import train_test_split
+
+# train, test = train_test_split(dataset_jordan_norm, test_size=0.2)
+x_train_norm,x_test_norm,y_train_norm,y_test_norm = train_test_split(dataset_jordan_norm[['mp','fg','fga','pts']],dataset_jordan_norm[['game_score']],test_size=0.2)
+
+#PCA in action
+from sklearn.decomposition import PCA
+for i in range(1,5):
+    pca = PCA(i)
+    x_train_norm_pca = pca.fit_transform(x_train_norm[['mp','fg','fga','pts']].values)
+    x_test_norm_pca = pca.transform(x_test_norm[['mp','fg','fga','pts']].values)
+
+    linear_model = LinearRegression()
+    linear_model.fit(x_train_norm_pca,y_train_norm)
+    preds = linear_model.predict(x_test_norm_pca)
+
+    mse_result = mse(y_test_norm,preds)
+    print("PCA: %f - MSE: %f"%(i,mse_result))
+
+
+
+
+=======
+
 
 
 
