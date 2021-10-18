@@ -119,6 +119,7 @@ plt.show()
 #######  Distribució Gausiana de cada Atribut ###########
 # ----------------------------------------------------------------------------------------------------------------- #
 """
+
 from scipy.stats import jarque_bera  #3
 #from scipy.stats import kstest
 #from statsmodels.stats.diagnostic import lilliefors
@@ -130,15 +131,29 @@ for i in range(dataset_jordan.shape[1]):
     x = data_jordan[:, i]
     stat, p = jarque_bera(x)
     #stat, p = kstest(x,'norm')
+=======
+#from scipy.stats import jarque_bera  #3
+#from scipy.stats import kstest
 
+
+data_jordan = dataset_jordan.values
+dataset_jordan.shape[1]
+for i in range(dataset_jordan.shape[1]):
+
+    x = data_jordan[:, i]
+    #stat, p = jarque_bera(x)
+    #stat, p = kstest(x,'norm')
+    print(p)
     # Interpretación
-    alpha = 0.05
+    alpha = 0.01
     if p > alpha:
         print('Estadisticos=%.3f, p=%.3f' % (stat, p))
         print('La muestra SI parece Gaussiana o Normal (no se rechaza la hipótesis nula H0)'+ dataset_jordan.columns[i])
     else:
         print('La muestra NO parece Gaussiana o Normal(se rechaza la hipótesis nula H0) el atributo '+ dataset_jordan.columns[i])
+
 """
+
 
 # ['age','mp','fg','stl','blk','tov']
 # ['age', 'result', 'mp', 'fg', 'stl', 'blk', 'tov', 'pts', 'game_score']
@@ -147,6 +162,13 @@ for i in range(dataset_jordan.shape[1]):
 #######  Distribució Gausiana de cada Atribut ###########
 # ----------------------------------------------------------------------------------------------------------------- #
 """
+=======
+
+# ----------------------------------------------------------------------------------------------------------------- #
+#######  Distribució Gausiana de cada Atribut ###########
+# ----------------------------------------------------------------------------------------------------------------- #
+""""""
+
 plt.figure()
 # relacio = sns.pairplot(dataset_jordan[['game','age','result','mp','fg','fga','fgp','three','threeatt','threep','ft','fta','ftp','orb','drb','trb','ast','stl','blk','tov','pts','game_score']])
 # relacio = sns.pairplot(dataset_jordan[['game','age','result','mp','fg','fga', 'three', 'threeatt','ft','fta','orb','drb','trb','ast','stl','blk','tov','pts','game_score']])
@@ -159,11 +181,19 @@ plt.show()
 # plt.title("Correlació Gausiana Lebron")
 # relacio = sns.pairplot(dataset_lebron[['game','age','result','mp','fg','fga','fgp','three','threeatt','threep','ft','fta','ftp','orb','drb','trb','ast','stl','blk','tov','pts','game_score']])
 # plt.show()
+
 """
 # ----------------------------------------------------------------------------------------------------------------- #
 #*************Generació plot per atribut per veure'n distribució gausiana********
 # ----------------------------------------------------------------------------------------------------------------- #
 """
+=======
+
+# ----------------------------------------------------------------------------------------------------------------- #
+#*************Generació plot per atribut per veure'n distribució gausiana********
+# ----------------------------------------------------------------------------------------------------------------- #
+""""""
+
 
 atributs= ['game','age','result','mp','fg','fga','fgp','three','threeatt','threep','ft','fta','ftp','orb','drb','trb','ast','stl','blk','tov','pts','game_score']
 
@@ -175,7 +205,10 @@ for atr in atributs:
     plt.scatter(dataset_jordan['age'], dataset_jordan[atr])
     plt.ylabel(atr);plt.xlabel('age')
     plt.show()
-"""
+
+
+=======
+
 
 #Observem que game, age, three, threeatt, threep i stl no tenen distribució gausianan. La resta si.
 
@@ -282,6 +315,17 @@ def split_data(x, y, train_ratio=0.8):
 
 
 """
+=======
+data_lebron=dataset_lebron_norm.values
+# x_lebron = data_lebron[:, :-1]
+x_lebron = data_lebron[:, :3] #age
+y_lebron = data_lebron[:, -1]
+# Dividim dades d'entrenament LEBRON
+
+x_train, y_train, x_val, y_val = split_data(x_lebron, y_lebron)
+
+
+
 x_t = x_train[:,1] # seleccionem atribut age i del conjunt de train
 x_v = x_val[:,1] # seleccionem atribut age i del conjunt de validacio.
 x_t = np.reshape(x_t,(x_t.shape[0],1)) # de dataFrame a np per eficiencia
@@ -299,6 +343,7 @@ r2 = r2_score(y_val, regr.predict(x_v))
 
 print("Error en atribut %d: %f" %(1, error))
 print("R2 score en atribut %d: %f" %(1, r2))
+
 """
 
 data_jordan = dataset_jordan.values
@@ -336,6 +381,8 @@ for i in range(1,5):
 
 
 
+
+=======
 
 
 
