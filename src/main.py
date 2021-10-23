@@ -15,11 +15,6 @@ from scipy.stats import normaltest
 from sklearn.metrics import r2_score
 
 # Repo creat
-<<<<<<< HEAD
-selected_Atributes = [['game','age','result','mp','fg','fga','ft','fta','pts','game_score'],
-                      ['game','age','result','mp','fg','fga','ft','fta','orb','drb','trb','ast','stl','tov','pts','game_score'],
-                      ['game','age','result','mp','fg','fga','three','threeatt','ft','fta','orb','drb','trb','ast','stl','blk','tov','pts','game_score']]
-=======
 selected_Atributes = [['game', 'age', 'result', 'mp', 'fg', 'fga', 'ft', 'fta', 'pts', 'game_score'],
                       ['game', 'age', 'result', 'mp', 'fg', 'fga', 'ft', 'fta', 'orb', 'drb', 'trb', 'ast', 'stl',
                        'tov', 'pts', 'game_score'],
@@ -27,7 +22,6 @@ selected_Atributes = [['game', 'age', 'result', 'mp', 'fg', 'fga', 'ft', 'fta', 
                        'trb', 'ast', 'stl', 'blk', 'tov', 'pts', 'game_score']]
 
 
->>>>>>> master
 # ----------------------------------------------------------------------------------------------------------------- #
 # Primera part C EDA
 # ----------------------------------------------------------------------------------------------------------------- #
@@ -45,19 +39,6 @@ print(dataset_lebron.dtypes)
 #######Datasets Dimensionalitat###########
 def dimensionalitat(dataset, player_name):
     data = dataset.values
-<<<<<<< HEAD
-    #separem l'atribut objectiu Y de les caracterísitques X
-    x_data = data[:,:-1]
-    y_data = data[:,-1]
-    print("Dimensionalitat de la BBDD_{}:".format(dataset.shape))
-    print("Dimensionalitat de les entrades X_{}: {}".format(player_name,x_data.shape))
-    print("Dimensionalitat de l'atribut Y_{}: {}".format(player_name,y_data.shape))
-
-dimensionalitat(dataset_jordan,"jordan")
-dimensionalitat(dataset_lebron,"lebron")
-
-
-=======
     # separem l'atribut objectiu Y de les caracterísitques X
     x_data = data[:, :-1]
     y_data = data[:, -1]
@@ -70,28 +51,10 @@ dimensionalitat(dataset_jordan, "jordan")
 dimensionalitat(dataset_lebron, "lebron")
 
 
->>>>>>> master
 #######SELECCIO D'ATRIBUTS###########
 
 #######Datasets Tractament de NaN ###########
 # Aquests atributs els elimiem per ser dervibables però ho expliquem igualment a l'informe
-<<<<<<< HEAD
-def tractar_nulls(dataset,player_name):
-    print("Nan del dataset: "+player_name)
-    print(dataset.isnull().sum())
-    dataset= dataset.replace(np.nan, 0)
-    return dataset
-
-dataset_jordan = tractar_nulls(dataset_jordan,"jordan")
-dataset_lebron = tractar_nulls(dataset_lebron,"lebron")
-
-
-
-#minus_plus: pk jordan no es registrava (100% NULL)
-#team,OPP: els jugadors són diferents
-#date: l'edat és el factor que relaciona ambdós jugadors i permet saber date. REDUNDANT
-#fgp,threep i ftp: són derivables
-=======
 def tractar_nulls(dataset, player_name):
     print("Nan del dataset: " + player_name)
     print(dataset.isnull().sum())
@@ -101,7 +64,6 @@ def tractar_nulls(dataset, player_name):
 
 dataset_jordan = tractar_nulls(dataset_jordan, "jordan")
 dataset_lebron = tractar_nulls(dataset_lebron, "lebron")
->>>>>>> master
 
 # minus_plus: pk jordan no es registrava (100% NULL)
 # team,OPP: els jugadors són diferents
@@ -115,32 +77,6 @@ dataset_jordan = dataset_jordan.drop(['minus_plus', 'team', 'opp', 'date', 'fgp'
 #######Dataset Conversió Atributs String ###########
 # ----------------------------------------------------------------------------------------------------------------- #
 print(dataset_jordan.head())
-<<<<<<< HEAD
-#MP
-def minuts_to_int(dataset):
-    # canviem str minuts 40:00 a int 40.
-    dataset["mp"].replace({x: int(x[:2]) for x in dataset["mp"]}, inplace=True)
-    return dataset
-
-#AGE
-def age_to_days(dataset):
-    dataset["age"].replace({x: int(x[:2])*365 + int(x[3:]) for x in dataset["age"]}, inplace=True)
-    return dataset
-
-#RESULT
-def convert_result(dataset):
-    #resultat format: W (+16) agafem el número
-    dataset["result"].replace({x: int(x.split('(')[1].split(')')[0]) for x in dataset["result"]}, inplace=True)
-    return dataset
-
-#CONVERSIO TOT DATASET
-def convert_atributes_type(dataset):
-    dataset = minuts_to_int(dataset)
-    dataset = age_to_days(dataset)
-    return convert_result(dataset)
-
-
-=======
 
 
 # MP
@@ -170,7 +106,6 @@ def convert_atributes_type(dataset):
     return convert_result(dataset)
 
 
->>>>>>> master
 dataset_jordan = convert_atributes_type(dataset_jordan)
 dataset_lebron = convert_atributes_type(dataset_lebron)
 print(dataset_jordan.describe())
@@ -181,48 +116,6 @@ print(dataset_lebron.describe())
 # !!Mirar amb correlació Pearson
 # Mirem la correlació entre els atributs d'entrada per entendre millor les dades
 # ----------------------------------------------------------------------------------------------------------------- #
-<<<<<<< HEAD
-
-def correlacio_pearson(dataset,player_name):
-    plt.figure()
-    fig, ax = plt.subplots(figsize=(20, 10))  # per mida cel·les
-    plt.title("Correlació {}".format(player_name))
-    sns.heatmap(dataset.corr(), annot=True, linewidths=.5, ax=ax)
-    plt.show()
-
-
-# correlacio_pearson(dataset_jordan,"jordan")
-# correlacio_pearson(dataset_lebron,"lebron")
-
-# ----------------------------------------------------------------------------------------------------------------- #
-#######  Distribució Gausiana de cada Atribut ###########
-# ----------------------------------------------------------------------------------------------------------------- #
-def testeja_normalitat(dataset, player_name,algoritme):
-    from scipy.stats import jarque_bera
-    from scipy.stats import chisquare
-
-    data = dataset.values
-    print("Resultats normalitat per {}".format(player_name))
-    for i in range(dataset.shape[1]):
-        x = data[:, i]
-        if algoritme == "bera":
-            stat, p = jarque_bera(x)
-        else:
-            stat, p = chisquare(x) #aqui el Chi Square
-
-        alpha = 0.05
-        if p > alpha:
-            print('Estadisticos=%.3f, p=%.3f' % (stat, p))
-            print(
-                'La muestra SI parece Gaussiana o Normal (no se rechaza la hipótesis nula H0)' + dataset.columns[i])
-        else:
-            print('La muestra NO parece Gaussiana o Normal(se rechaza la hipótesis nula H0) el atributo ' +
-                  dataset.columns[i])
-
-
-# testeja_normalitat(dataset_lebron,"lebron","chi")
-
-=======
 
 def correlacio_pearson(dataset, player_name):
     plt.figure()
@@ -235,17 +128,11 @@ def correlacio_pearson(dataset, player_name):
 
 #correlacio_pearson(dataset_jordan, "jordan")
 #correlacio_pearson(dataset_lebron, "lebron")
->>>>>>> master
 
 
-# ['age','mp','fg','stl','blk','tov']
-# ['age', 'result', 'mp', 'fg', 'stl', 'blk', 'tov', 'pts', 'game_score']
-# ['result','mp','fg','fga','ft','ft','trb','ast','pts','game_score']
 # ----------------------------------------------------------------------------------------------------------------- #
 #######  Distribució Gausiana de cada Atribut ###########
 # ----------------------------------------------------------------------------------------------------------------- #
-<<<<<<< HEAD
-=======
 def testeja_normalitat(dataset, player_name, algoritme):
     from scipy.stats import jarque_bera
     from scipy.stats import chisquare
@@ -278,40 +165,19 @@ def testeja_normalitat(dataset, player_name, algoritme):
 # ----------------------------------------------------------------------------------------------------------------- #
 #######  Distribució Gausiana de cada Atribut ###########
 # ----------------------------------------------------------------------------------------------------------------- #
->>>>>>> master
 def make_pairplot(dataset, atributs):
     plt.figure()
     sns.pairplot(dataset[atributs])
     plt.show()
 
 
-<<<<<<< HEAD
-
 # make_pairplot(dataset_jordan, selected_Atributes[0])
 # make_pairplot(dataset_lebron, selected_Atributes[0])
 
-=======
-# make_pairplot(dataset_jordan, selected_Atributes[0])
-# make_pairplot(dataset_lebron, selected_Atributes[0])
-
->>>>>>> master
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # *************Generació plot per atribut per veure'n distribució gausiana********
 # ----------------------------------------------------------------------------------------------------------------- #
-<<<<<<< HEAD
-def make_pairplot_per_atribute(dataset,player_name,atributes):
-    for atr in atributes:
-        sns.set_theme('notebook', style='dark')
-        sns.pairplot(dataset[[atr]], height=5).fig.suptitle("Correlació Gausiana {}: {}".format(player_name,atr), y=1)
-        plt.show()
-
-        plt.title("Correlació respecte edat de {} {} ".format(atr,player_name))
-        plt.scatter(dataset['age'], dataset[atr])
-        plt.ylabel(atr);plt.xlabel('age')
-        plt.show()
-
-=======
 def make_pairplot_per_atribute(dataset, player_name, atributes):
     for atr in atributes:
         sns.set_theme('notebook', style='dark')
@@ -325,7 +191,6 @@ def make_pairplot_per_atribute(dataset, player_name, atributes):
         plt.show()
 
 
->>>>>>> master
 # make_pairplot_per_atribute(dataset_jordan,"jordan",selected_Atributes[2])
 # make_pairplot_per_atribute(dataset_lebron,"lebron",selected_Atributes[2])
 
@@ -348,15 +213,6 @@ def make_pairplot_per_atribute(dataset, player_name, atributes):
 
 
 ###### Estandarització d'atributs  ########
-<<<<<<< HEAD
-#(x-mitjana)/(max-min)
-def estandaritzar_min_max(dataset):
-    return (dataset - dataset.min())/(dataset.max() - dataset.min())
-
-
-def estandaritzar_mitjana(dataset):
-    return (dataset-dataset.mean())/dataset.std()
-=======
 # (x-mitjana)/(max-min)
 def estandaritzar_min_max(dataset):
     return (dataset - dataset.min()) / (dataset.max() - dataset.min())
@@ -364,7 +220,6 @@ def estandaritzar_min_max(dataset):
 
 def estandaritzar_mitjana(dataset):
     return (dataset - dataset.mean()) / dataset.std()
->>>>>>> master
 
 
 # dataset_jordan_norm = estandaritzar_mitjana(dataset_jordan)
@@ -377,18 +232,11 @@ def make_histogrames(dataset, player_name, atributes):
     for atr in atributes:
         plt.figure()
         fig, (ax1, ax2) = plt.subplots(1, 2)
-<<<<<<< HEAD
-        fig.suptitle("Histograma de l'atribut {} de {}".format(atr,player_name))
-        ax1.hist(dataset[atr], bins=11, range=[np.min(dataset[atr]), np.max(dataset[atr])], histtype="bar", rwidth=0.8)
-        ax1.set(xlabel='Attribute Value', ylabel='Count')
-        ax2.hist(dataset_norm[atr], bins=11, range=[np.min(dataset_norm[atr]), np.max(dataset_norm[atr])], histtype="bar", rwidth=0.8)
-=======
         fig.suptitle("Histograma de l'atribut {} de {}".format(atr, player_name))
         ax1.hist(dataset[atr], bins=11, range=[np.min(dataset[atr]), np.max(dataset[atr])], histtype="bar", rwidth=0.8)
         ax1.set(xlabel='Attribute Value', ylabel='Count')
         ax2.hist(dataset_norm[atr], bins=11, range=[np.min(dataset_norm[atr]), np.max(dataset_norm[atr])],
                  histtype="bar", rwidth=0.8)
->>>>>>> master
         ax2.set(xlabel='Normalized value', ylabel='')
         plt.show()
 
@@ -441,11 +289,7 @@ def split_data(x, y, train_ratio=0.8):
 
 
 ###### MSE i R2 score per Atribut #######################
-<<<<<<< HEAD
-def error_per_atribut(dataset,player_name, normalize=False):
-=======
 def error_per_atribut(dataset, player_name, normalize=False):
->>>>>>> master
     if normalize is True:
         dataset_norm = estandaritzar_mitjana(dataset)
         data = dataset_norm.values
@@ -472,65 +316,20 @@ def error_per_atribut(dataset, player_name, normalize=False):
         error = mse(y_val, predicted)  # calculem error
         r2 = r2_score(y_val, predicted)
 
-<<<<<<< HEAD
-        print("Error en atribut %s: %f" %(dataset.columns[i], error))
-        print("R2 score en atribut %s: %f" %(dataset.columns[i], r2))
-=======
         print("Error en atribut %s: %f" % (dataset.columns[i], error))
         print("R2 score en atribut %s: %f" % (dataset.columns[i], r2))
->>>>>>> master
 
 
 # error_per_atribut(dataset_jordan,"jordan")
 # error_per_atribut(dataset_lebron,"lebron",True)
 
 
-<<<<<<< HEAD
-
-
-=======
->>>>>>> master
 # Quan es treballa en dades n-dimensionals (més d'un atribut), una opció és reduir la seva n-dimensionalitat aplicant
 # un Principal Component Analysis (PCA) i quedar-se amb els primers 2 o 3 components, obtenint unes dades que (ara sí)
 # poden ser visualitzables en el nou espai. Existeixen altres embeddings de baixa dimensionalitat on poder visualitzar
 # les dades?
 
 
-<<<<<<< HEAD
-
-# ----------------------------------------------------------------------------------------------------------------- #
-# PCA - avaluació dimensionalitat a adequada
-# ----------------------------------------------------------------------------------------------------------------- #
-
-def make_pca(dataset, player_name, atributes):
-    from sklearn.model_selection import train_test_split
-    from sklearn.decomposition import PCA
-
-    dataset__norm = estandaritzar_mitjana(dataset[atributes])
-    x_norm = dataset__norm[atributes[1:-1]]
-    y_norm = dataset__norm[atributes[-1]]
-
-    x_train_norm, x_val_norm, y_train_norm, y_val_norm = train_test_split(x_norm, y_norm, test_size=0.2)
-
-    for i in range(1, len(atributes)-1):
-        pca = PCA(i)
-        x_train_norm_pca = pca.fit_transform(x_train_norm.values)
-        x_test_norm_pca = pca.transform(x_val_norm.values)
-
-        linear_model = LinearRegression()
-        linear_model.fit(x_train_norm_pca,y_train_norm)
-        preds = linear_model.predict(x_test_norm_pca)
-
-        mse_result = mse(y_val_norm,preds)
-        r2 = r2_score(y_val_norm, preds)
-        print("PCA %s: %d - MSE: %f - R2: %f" % (player_name, i, mse_result,r2))
-
-
-make_pca(dataset_jordan,"jordan",selected_Atributes[2])
-make_pca(dataset_lebron,"lebron",['mp','fg','fga','pts'])
-make_pca(dataset_lebron,"lebron",selected_Atributes[2])
-
-=======
 # ----------------------------------------------------------------------------------------------------------------- #
 # PCA - avaluació dimensionalitat a adequada
 # ----------------------------------------------------------------------------------------------------------------- #
@@ -557,7 +356,6 @@ def make_pca(dataset, player_name, atributes):
         mse_result = mse(y_val_norm, preds)
         r2 = r2_score(y_val_norm, preds)
         print("PCA %s: %d - MSE: %f - R2: %f" % (player_name, i, mse_result, r2))
->>>>>>> master
 
 
 make_pca(dataset_jordan, "jordan", selected_Atributes[2])
@@ -565,8 +363,4 @@ make_pca(dataset_jordan, "jordan_restricted_40", ['pts', 'fg', 'ft', 'fta', 'fga
 #make_pca(dataset_lebron, "lebron", ['mp', 'fg', 'fga', 'pts'])
 #make_pca(dataset_lebron, "lebron", selected_Atributes[2])
 
-<<<<<<< HEAD
-z=3
-=======
 z = 3
->>>>>>> master
