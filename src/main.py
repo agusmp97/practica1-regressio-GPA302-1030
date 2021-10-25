@@ -13,13 +13,19 @@ import seaborn as sns
 from sklearn.linear_model import LinearRegression
 from scipy.stats import normaltest
 from sklearn.metrics import r2_score
+import plotly.express as px
 
-# Repo creat
+# Variables globals
 selected_Atributes = [['game', 'age', 'result', 'mp', 'fg', 'fga', 'ft', 'fta', 'pts', 'game_score'],
                       ['game', 'age', 'result', 'mp', 'fg', 'fga', 'ft', 'fta', 'orb', 'drb', 'trb', 'ast', 'stl',
                        'tov', 'pts', 'game_score'],
                       ['game', 'age', 'result', 'mp', 'fg', 'fga', 'three', 'threeatt', 'ft', 'fta', 'orb', 'drb',
                        'trb', 'ast', 'stl', 'blk', 'tov', 'pts', 'game_score']]
+
+x_labels=['Posició partit temporada','Edat en dies','Diff. de punts','Minuts jugats/partit','Llençaments anotats',
+          'Llençaments intentats','Triples anotats','Triples intentats','Tirs lliures anotats','Tirs lliures intentats',
+          'Rebots en atac','Rebots en defensa','Rebots jugats','Assitències','Pilotes robades','Taps','Turnovers',
+          'Punts']
 
 
 # ----------------------------------------------------------------------------------------------------------------- #
@@ -113,7 +119,7 @@ print(dataset_lebron.describe())
 
 
 # ----------------------------------------------------------------------------------------------------------------- #
-# !!Mirar amb correlació Pearson
+# Mirar amb correlació Pearson
 # Mirem la correlació entre els atributs d'entrada per entendre millor les dades
 # ----------------------------------------------------------------------------------------------------------------- #
 
@@ -186,7 +192,7 @@ def make_pairplot_per_atribute(dataset, player_name, atributes):
 
         plt.title("Correlació respecte edat de {} {} ".format(atr, player_name))
         plt.scatter(dataset['age'], dataset[atr])
-        plt.ylabel(atr);
+        plt.ylabel(atr)
         plt.xlabel('age')
         plt.show()
 
@@ -213,13 +219,13 @@ def make_pairplot_per_atribute(dataset, player_name, atributes):
 
 
 ###### Estandarització d'atributs  ########
-# (x-mitjana)/(max-min)
+
 def estandaritzar_min_max(dataset):
     return (dataset - dataset.min()) / (dataset.max() - dataset.min())
 
 
 def estandaritzar_mitjana(dataset):
-    return (dataset - dataset.mean()) / dataset.std()
+    return (dataset - dataset.mean(0)) / dataset.std(0)
 
 
 # dataset_jordan_norm = estandaritzar_mitjana(dataset_jordan)
@@ -288,10 +294,11 @@ def split_data(x, y, train_ratio=0.8):
 # (en nostre cas age,mp, result?) i mirar quin dóna MSE menor
 
 
+
 ###### MSE i R2 score per Atribut #######################
 def error_per_atribut(dataset, player_name, normalize=False):
     if normalize is True:
-        dataset_norm = estandaritzar_mitjana(dataset)
+        dataset_norm = standarize(dataset)
         data = dataset_norm.values
     else:
         data = dataset.values
@@ -307,20 +314,24 @@ def error_per_atribut(dataset, player_name, normalize=False):
 
         regr = regression(x_t, y_train)
         predicted = regr.predict(x_v)
+
+        error = str(round(mse(y_val, predicted),3))  # calculem error
+        r2 = str(round(r2_score(y_val, predicted),3))
+
         plt.figure()
-        plt.title("Predicció per {} de {}".format(dataset.columns[i], player_name))
+        plt.title("Predicció: {}  -   MSE: {}   R2: {}".format((dataset.columns[i]).upper(), error,r2))
+        plt.xlabel(x_labels[i])
+        plt.ylabel('Game_score')
         plt.scatter(x_t, y_train)
         plt.plot(x_v, predicted, 'r')
+        # plt.savefig("../../figures/predic_univ_std_{}_{}.png".format(dataset.columns[i], player_name))
         plt.show()
 
-        error = mse(y_val, predicted)  # calculem error
-        r2 = r2_score(y_val, predicted)
-
-        print("Error en atribut %s: %f" % (dataset.columns[i], error))
-        print("R2 score en atribut %s: %f" % (dataset.columns[i], r2))
+        print("Error en atribut %s: %s" % (dataset.columns[i], error))
+        print("R2 score en atribut %s: %s" % (dataset.columns[i], r2))
 
 
-# error_per_atribut(dataset_jordan,"jordan")
+# error_per_atribut(dataset_jordan,"Jordan")
 # error_per_atribut(dataset_lebron,"lebron",True)
 
 
@@ -334,7 +345,7 @@ def error_per_atribut(dataset, player_name, normalize=False):
 # PCA - avaluació dimensionalitat a adequada
 # ----------------------------------------------------------------------------------------------------------------- #
 
-def make_pca(dataset, player_name, atributes):
+def make_pca(dataset, player_name, atributes, print_plot):
     from sklearn.model_selection import train_test_split
     from sklearn.decomposition import PCA
 
@@ -343,24 +354,60 @@ def make_pca(dataset, player_name, atributes):
     y_norm = dataset__norm[atributes[-1]] # Aquest és l'atribut a predir
 
     x_train_norm, x_val_norm, y_train_norm, y_val_norm = train_test_split(x_norm, y_norm, test_size=0.2)
+    mse_vect = []
+    i_vect=[]
+    r2_vect = []
 
     for i in range(1, len(atributes)):
         pca = PCA(i)
         x_train_norm_pca = pca.fit_transform(x_train_norm.values)
         x_test_norm_pca = pca.transform(x_val_norm.values)
 
+        total_var=pca.explained_variance_ratio_.sum()*100
+        lab = {str(j): f"PC {j + 1}" for j in range(i)}
+        lab['color'] = 'Game_score'
+
+        fig = px.scatter_matrix(
+            x_test_norm_pca,
+            color=y_val_norm,
+            dimensions=range(i),
+            labels=lab,
+            title=f'Total Explained Variance: {total_var:.2f}%',
+        )
+        fig.update_traces(diagonal_visible=False)
+        fig.show()
+
         linear_model = LinearRegression()
         linear_model.fit(x_train_norm_pca, y_train_norm)
         preds = linear_model.predict(x_test_norm_pca)
 
         mse_result = mse(y_val_norm, preds)
+        i_vect.append(i)
+        mse_vect.append(mse_result)
+
         r2 = r2_score(y_val_norm, preds)
+        r2_vect.append(r2)
         print("PCA %s: %d - MSE: %f - R2: %f" % (player_name, i, mse_result, r2))
 
+    if print_plot:
+        plt.figure()
+        ax=plt.scatter(x_test_norm_pca[:,0],y_val_norm)
+        plt.plot(x_test_norm_pca[:,0], preds, 'r')
+        plt.show()
 
-make_pca(dataset_jordan, "jordan", selected_Atributes[2])
-make_pca(dataset_jordan, "jordan_restricted_40", ['pts', 'fg', 'ft', 'fta', 'fga', 'stl', 'game_score'])
-#make_pca(dataset_lebron, "lebron", ['mp', 'fg', 'fga', 'pts'])
-#make_pca(dataset_lebron, "lebron", selected_Atributes[2])
+    fig=plt.figure()
+    ax = plt.subplot(111)
+    ax.plot(i_vect,r2_vect, 'b',label='R2_Score')
+    ax.plot(i_vect, mse_vect, 'r',label='MSE')
+    ax.legend(bbox_to_anchor=(1, 0.8))
+    plt.title("Error per dimensionalitat PCA")
+    plt.show()
+
+
+
+# make_pca(dataset_jordan, "jordan_Dataset", selected_Atributes[2], False)
+# make_pca(dataset_jordan, "jordan_Pearson_40", ['pts', 'fg', 'ft', 'fta', 'fga', 'stl', 'game_score'], True)
+# make_pca(dataset_jordan, "jordan_Gaussian", ['pts','ast','drb','fg', 'ft', 'fta', 'tov', 'trb', 'game_score'], True)
+
 
 z = 3
