@@ -14,6 +14,7 @@ from sklearn.linear_model import LinearRegression
 from scipy.stats import normaltest
 from sklearn.metrics import r2_score
 
+
 # Repo creat
 selected_Atributes = [['game', 'age', 'result', 'mp', 'fg', 'fga', 'ft', 'fta', 'pts', 'game_score'],
                       ['game', 'age', 'result', 'mp', 'fg', 'fga', 'ft', 'fta', 'orb', 'drb', 'trb', 'ast', 'stl',
@@ -136,7 +137,7 @@ def correlacio_pearson(dataset, player_name):
 def testeja_normalitat(dataset, player_name, algoritme):
     from scipy.stats import jarque_bera
     from scipy.stats import chisquare
-
+    normals=[]
     data = dataset.values
     print("Resultats normalitat per {}".format(player_name))
     for i in range(dataset.shape[1]):
@@ -146,20 +147,21 @@ def testeja_normalitat(dataset, player_name, algoritme):
         else:
             stat, p = chisquare(x)  # aqui el Chi Square
 
-        alpha = 0.05
+        alpha = 0.01
         if p > alpha:
             print('Estadisticos=%.3f, p=%.3f' % (stat, p))
+            normals.append(dataset.columns[i])
             print(
                 'La muestra SI parece Gaussiana o Normal (no se rechaza la hipótesis nula H0)' + dataset.columns[i])
         else:
             print('La muestra NO parece Gaussiana o Normal(se rechaza la hipótesis nula H0) el atributo ' +
                   dataset.columns[i])
+    print(normals)
+
+#testeja_normalitat(dataset_lebron,"lebron","bera")
 
 
-# testeja_normalitat(dataset_lebron,"lebron","chi")
-
-
-# ['age','mp','fg','stl','blk','tov']
+# ['mp','fg','stl','tov']
 # ['age', 'result', 'mp', 'fg', 'stl', 'blk', 'tov', 'pts', 'game_score']
 # ['result','mp','fg','fga','ft','ft','trb','ast','pts','game_score']
 # ----------------------------------------------------------------------------------------------------------------- #
@@ -180,19 +182,25 @@ def make_pairplot(dataset, atributs):
 # ----------------------------------------------------------------------------------------------------------------- #
 def make_pairplot_per_atribute(dataset, player_name, atributes):
     for atr in atributes:
+
+
         sns.set_theme('notebook', style='dark')
-        sns.pairplot(dataset[[atr]], height=5).fig.suptitle("Correlació Gausiana {}: {}".format(player_name, atr), y=1)
+        sns.pairplot(dataset[[atr]],  height=5).fig.suptitle("Correlació Gausiana {}: {}".format(player_name, atr))
+
+        plt.ylabel('Survived')
+
+        plt.savefig("../figures/histograma_" + player_name +"_"+ atr+ ".png")
         plt.show()
 
-        plt.title("Correlació respecte edat de {} {} ".format(atr, player_name))
-        plt.scatter(dataset['age'], dataset[atr])
-        plt.ylabel(atr);
-        plt.xlabel('age')
-        plt.show()
+        #plt.title("Correlació respecte edat de {} {} ".format(atr, player_name))
+        #plt.scatter(dataset['age'], dataset[atr])
+        #plt.ylabel(atr);
+        #plt.xlabel('age')
+        #plt.show()
 
 
-# make_pairplot_per_atribute(dataset_jordan,"jordan",selected_Atributes[2])
-# make_pairplot_per_atribute(dataset_lebron,"lebron",selected_Atributes[2])
+#make_pairplot_per_atribute(dataset_jordan,"jordan",selected_Atributes[2])
+#make_pairplot_per_atribute(dataset_lebron,"lebron",selected_Atributes[2])
 
 
 # Observem que game, age, three, threeatt, threep i stl no tenen distribució gausianan. La resta si.
@@ -237,12 +245,13 @@ def make_histogrames(dataset, player_name, atributes):
         ax1.set(xlabel='Attribute Value', ylabel='Count')
         ax2.hist(dataset_norm[atr], bins=11, range=[np.min(dataset_norm[atr]), np.max(dataset_norm[atr])],
                  histtype="bar", rwidth=0.8)
-        ax2.set(xlabel='Normalized value', ylabel='')
+        ax2.set(xlabel='Standaritzed value', ylabel='')
+        plt.savefig("../figures/histograma_estandard" + player_name + "_" + atr + ".png")
         plt.show()
 
 
-# make_histogrames(dataset_jordan,"jordan",selected_Atributes[0])
-# make_histogrames(dataset_lebron,"lebron",selected_Atributes[0])
+#make_histogrames(dataset_jordan,"jordan",selected_Atributes[0])
+#make_histogrames(dataset_lebron,"lebron",selected_Atributes[0])
 
 
 # ----------------------------------------------------------------------------------------------------------------- #
@@ -334,7 +343,7 @@ def error_per_atribut(dataset, player_name, normalize=False):
 # PCA - avaluació dimensionalitat a adequada
 # ----------------------------------------------------------------------------------------------------------------- #
 
-def make_pca(dataset, player_name, atributes):
+def make_pca(dataset, player_name, atributes, print_plot):
     from sklearn.model_selection import train_test_split
     from sklearn.decomposition import PCA
 
@@ -343,24 +352,84 @@ def make_pca(dataset, player_name, atributes):
     y_norm = dataset__norm[atributes[-1]] # Aquest és l'atribut a predir
 
     x_train_norm, x_val_norm, y_train_norm, y_val_norm = train_test_split(x_norm, y_norm, test_size=0.2)
-
+    mse_vect = []
+    i_vect=[]
+    r2_vect = []
     for i in range(1, len(atributes)):
         pca = PCA(i)
         x_train_norm_pca = pca.fit_transform(x_train_norm.values)
         x_test_norm_pca = pca.transform(x_val_norm.values)
+
+        total_var=pca.explained_variance_ratio_.sum()*100
+        lab = {str(j): f"PC {j + 1}" for j in range(i)}
+        lab['color'] = 'Median Price'
+
+
+        fig = px.scatter_matrix(
+            x_test_norm_pca,
+            color=y_val_norm,
+            dimensions=range(i),
+            labels=lab,
+            title=f'Total Explained Variance: {total_var:.2f}%',
+        )
+        fig.update_traces(diagonal_visible=False)
+        fig.show()
 
         linear_model = LinearRegression()
         linear_model.fit(x_train_norm_pca, y_train_norm)
         preds = linear_model.predict(x_test_norm_pca)
 
         mse_result = mse(y_val_norm, preds)
+        i_vect.append(i)
+        mse_vect.append(mse_result)
+
         r2 = r2_score(y_val_norm, preds)
+        r2_vect.append(r2)
         print("PCA %s: %d - MSE: %f - R2: %f" % (player_name, i, mse_result, r2))
 
+    if print_plot:
+        plt.figure()
+        ax=plt.scatter(x_test_norm_pca[:,0],y_val_norm)
+        plt.plot(x_test_norm_pca[:,0], preds, 'r')
+        plt.show()
 
-make_pca(dataset_jordan, "jordan", selected_Atributes[2])
-make_pca(dataset_jordan, "jordan_restricted_40", ['pts', 'fg', 'ft', 'fta', 'fga', 'stl', 'game_score'])
-#make_pca(dataset_lebron, "lebron", ['mp', 'fg', 'fga', 'pts'])
-#make_pca(dataset_lebron, "lebron", selected_Atributes[2])
+    fig=plt.figure()
+    ax = plt.subplot(111)
+    ax.plot(i_vect,r2_vect, 'b',label='R2_Score')
+    ax.plot(i_vect, mse_vect, 'r',label='MSE')
+    ax.legend(bbox_to_anchor=(1, 0.8))
+    plt.title("R2 score i MSE en funció dimensionalitat PCA")
+    plt.show()
+
+
+
+#make_pca(dataset_jordan, "jordan", selected_Atributes[2], False)
+#make_pca(dataset_jordan, "jordan_restricted_40", ['pts', 'fg', 'ft', 'fta', 'fga', 'stl', 'game_score'], True)
+#make_pca(dataset_lebron, "lebron", ['mp', 'fg', 'fga', 'pts'],False)
+#make_pca(dataset_lebron, "lebron", selected_Atributes[2],False)
 
 z = 3
+
+# ----------------------------------------------------------------------------------------------------------------- #
+# Descens de Gradient
+# ----------------------------------------------------------------------------------------------------------------- #
+
+
+class Regressor(object):
+    def __init__(self, w0, w1, alpha):
+        # Inicialitzem w0 i w1 (per ser ampliat amb altres w's)
+        self.w0 = w0
+        self.w1 = w1
+        self.alpha = alpha
+
+    def predict(self, x):
+        # implementar aqui la funció de prediccio
+        pass
+
+    def __update(self, hy, y):
+        # actualitzar aqui els pesos donada la prediccio (hy) i la y real.
+        pass
+
+    def train(self, max_iter, epsilon):
+        # Entrenar durant max_iter iteracions o fins que la millora sigui inferior a epsilon
+        pass
