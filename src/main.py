@@ -409,5 +409,94 @@ def make_pca(dataset, player_name, atributes, print_plot):
 # make_pca(dataset_jordan, "jordan_Pearson_40", ['pts', 'fg', 'ft', 'fta', 'fga', 'stl', 'game_score'], True)
 # make_pca(dataset_jordan, "jordan_Gaussian", ['pts','ast','drb','fg', 'ft', 'fta', 'tov', 'trb', 'game_score'], True)
 
+class Regressor(object):
+    def __init__(self, w0, w1, alpha, x , y):
+        # Inicialitzem w0 i w1 (per ser ampliat amb altres w's)
+        self.w0 = w0
+        self.w1 = w1
+        self.alpha = alpha
+        self.x = x
+        self.y = y
 
-z = 3
+
+    def predict(self, x):
+        hy=[]
+        for i in range(len(x)):
+            hy.append(self.w0+self.w1 *x[i])
+        #
+        return hy
+        # implementar aqui la funció de prediccio
+
+
+    def __update(self, hy, y):
+        z=[]
+        z2=[]
+        for i in range(len(hy)):
+            z.append( (hy[i] - y[i]) )
+            z2.append((hy[i] - y[i]) * self.x[i])
+
+
+        self.w0= self.w0 - self.alpha* (1/len(hy) * sum(z))
+        self.w1 = self.w1 - self.alpha * (1 / len(hy) * sum(z2))
+
+
+        # actualitzar aqui els pesos donada la prediccio (hy) i la y real.
+
+
+    def train(self, max_iter, epsilon):
+        # Entrenar durant max_iter iteracions o fins que la millora sigui inferior a epsilon
+        iteracions=1
+        mse_anterior = 100
+        mse_actual = 100
+        millora = 100
+        predides=0
+        i_vect=[]
+        error=[]
+        while iteracions <= max_iter and epsilon < millora:
+            if iteracions%200==0:
+                self.alpha=self.alpha/10
+            if iteracions!=1:
+                self.__update(predides, self.y)
+
+            predides = self.predict(self.x)
+            mse_actual = mse(predides, self.y)
+            r2_r=r2_score(predides,self.y)
+            millora = abs(mse_anterior-mse_actual)
+            i_vect.append(iteracions)
+            error.append(mse_actual)
+
+
+            mse_anterior = mse_actual
+            iteracions += 1
+        return iteracions, self.w0, self.w1, mse_actual, r2_r, i_vect, error
+
+
+
+import random
+#reg= Regressor(0.5, 2, 0.005,dataset_jordan[["pts"]].values,dataset_jordan[["game_score"]].values)
+
+#iteracions, w0, w1, mse_actual, r2_r, i_vect, error =reg.train(1000000,0.01)
+def Montecarlo():
+    mse_actual_min=1000
+    for i in range(5):
+        w0 = random.gauss(0.5, 0.5)
+        w1=random.gauss(3.5,7)
+        reg = Regressor(w0, w1, 0.00005, dataset_jordan[["pts"]].values, dataset_jordan[["game_score"]].values)
+        iteracions, w0, w1, mse_actual, r2_r, i_vect, error = reg.train(1000000, 0.000000001)
+        if mse_actual< mse_actual_min:
+            iteracions_min, w0_min, w1_min, mse_actual_min ,r2_r_min, i_vect_min, error_min= iteracions, w0, w1, mse_actual, r2_r, i_vect, error
+    return iteracions_min, w0_min, w1_min, mse_actual_min 
+
+
+
+
+
+
+#plt.figure()
+#plt.plot(i_vect, error, 'r')
+#plt.show()
+
+print(Montecarlo())
+
+
+#z = 3
