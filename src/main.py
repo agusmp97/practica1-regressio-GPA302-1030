@@ -499,7 +499,7 @@ class Regressor(object):
             iteracions += 1
 
         y_pred = self.predict(self.x_val)  # Fa la predicció sobre les dades de validació amb el model entrenat
-        print(r2_r)
+        print("MSE del model actual: {}".format(mse_actual))
 
         return iteracions, self.w0, self.w1, mse_actual, r2_r, i_vect, error, y_pred
 
